@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "author": "Projet IoT",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 0, "left": -160, "attrs": {} },
+    { "type": "wokwi-slide-switch", "id": "sw1", "top": -91.6, "left": -352.1, "attrs": {} },
+    {
+      "type": "wokwi-photoresistor-sensor",
+      "id": "ldr1",
+      "top": -92.8,
+      "left": -613.6,
+      "attrs": {}
+    },
+    { "type": "wokwi-ds18b20", "id": "temp1", "top": -97.13, "left": -235.92, "attrs": {} },
+    { "type": "wokwi-ds18b20", "id": "temp2", "top": -97.13, "left": -274.32, "attrs": {} }
+  ],
+  "connections": [
+    [ "esp:TX", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX", "$serialMonitor:TX", "", [] ],
+    [ "sw1:2", "esp:12", "green", [ "v0" ] ],
+    [ "sw1:3", "esp:GND.1", "black", [ "v0" ] ],
+    [ "ldr1:VCC", "esp:3V3", "red", [ "v0" ] ],
+    [ "ldr1:GND", "esp:GND.2", "black", [ "v0" ] ],
+    [ "ldr1:AO", "esp:34", "blue", [ "v0" ] ],
+    [ "temp1:VCC", "esp:3V3", "red", [ "v0" ] ],
+    [ "temp1:GND", "esp:GND.3", "black", [ "v0" ] ],
+    [ "temp1:DQ", "esp:4", "orange", [ "v0" ] ],
+    [ "temp2:VCC", "esp:3V3", "red", [ "v0" ] ],
+    [ "temp2:GND", "esp:GND.4", "black", [ "v0" ] ],
+    [ "temp2:DQ", "esp:5", "orange", [ "v0" ] ]
+  ],
+  "dependencies": {}
+}

@@ -4,6 +4,7 @@
 const { parseArgs } = require('node:util');
 const { Simulator } = require('./simulator');
 const { createConsoleOutput } = require('./outputs/console');
+const { createMqttOutput } = require('./outputs/mqtt');
 
 const { values } = parseArgs({
   options: {
@@ -37,6 +38,7 @@ const sim = new Simulator({
 
 const outputs = {
   console: () => createConsoleOutput({ format: values.format }),
+  mqtt: () => createMqttOutput(),
 };
 
 if (!outputs[values.output]) {

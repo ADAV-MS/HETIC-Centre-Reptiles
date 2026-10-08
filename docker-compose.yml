@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   broker:
     image: eclipse-mosquitto:latest
@@ -18,6 +16,7 @@ services:
     environment:
       # Les identifiants "node_user" sont inclus directement dans l'URL
       - MQTT_URL=mqtt://node_user:node_user@broker:1883
+    command: ["node", "src/index.js", "--output", "mqtt", "--scenario", "incidents"]
     depends_on:
       - broker
 

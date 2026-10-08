@@ -8,8 +8,12 @@ function createMqttOutput() {
 
   return {
     start(sim) {
-      // 1. Connexion au serveur MQTT local
-      client = mqtt.connect('mqtt://localhost:1883');
+      // Connexion au broker MQTT
+      const brokerUrl = process.env.MQTT_URL || 'mqtt://mosquitto:1883';
+      client = mqtt.connect(brokerUrl, {
+        username: 'node_user',
+        password: 'node_user'
+      });
 
       client.on('connect', () => {
         // Écoute des commandes pour tous les boîtiers
@@ -26,7 +30,8 @@ function createMqttOutput() {
       sim.on('message', (m) => {
         let sub = 'reading';
         if (m.type === 'door') sub = 'door';
-        else if (m.type === 'heartbeat' || m.type === 'boot') sub = 'heartbeat';
+        else if (m.type === 'heartbeat') sub = 'heartbeat';
+        else if (m.type === 'boot') sub = 'boot';
         else if (m.type === 'ack') sub = 'ack';
 
         const topic = `rc/v1/${sub}/${m.node}`;

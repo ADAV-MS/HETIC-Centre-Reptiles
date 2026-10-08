@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supervision - Centre de Réhabilitation Reptiles</title>
+    <link rel="stylesheet" href="./style.css">
+    <!-- MQTT.js et Chart.js -->
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <header class="header">
+        <h1>Centre de Réhabilitation Reptiles - Supervision</h1>
+        <div class="broker-status">
+            <span>Statut du broker:</span>
+            <span id="status" class="badge badge-offline">Déconnecté</span>
+        </div>
+    </header>
+
+    <main class="dashboard-grid">
+        <!-- Section Vue d'ensemble -->
+        <section class="card-box span-2">
+            <h2>Vue d'ensemble du site</h2>
+            <div id="nodes-grid" class="nodes-grid">
+                <p class="placeholder-text">En attente de connexion et de données...</p>
+            </div>
+        </section>
+
+        <!-- Section Alertes -->
+        <section class="card-box">
+            <h2>Gestion des alertes</h2>
+            <div id="alerts-container">
+                <p class="placeholder-text">Aucune alerte active</p>
+            </div>
+        </section>
+
+        <!-- Section Graphique historique -->
+        <section class="card-box span-2">
+            <h2 id="detail-title">Historique 30 minutes (Sélectionner un enclos)</h2>
+            <div class="chart-container">
+                <canvas id="chart-node"></canvas>
+            </div>
+        </section>
+
+        <!-- Section Commandes -->
+        <section class="card-box">
+            <h2>Envoi de commandes</h2>
+            <form id="cmd-form" class="cmd-form">
+                <div class="form-group">
+                    <label for="cmd-target">Node cible</label>
+                    <input type="text" id="cmd-target" readonly placeholder="Sélectionner dans la grille">
+                </div>
+                <div class="form-group">
+                    <label for="cmd-action">Action</label>
+                    <select id="cmd-action">
+                        <option value="lamp">Lampe (lamp)</option>
+                        <option value="light">Lumière (light)</option>
+                        <option value="setpoint">Consigne Pt. Chaud (setpoint)</option>
+                        <option value="safety_cut">Coupure de sécurité (safety_cut)</option>
+                        <option value="interval">Intervalle de mesure (interval)</option>
+                        <option value="reboot">Redémarrage (reboot)</option>
+                        <option value="identify">Identifier (identify)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="cmd-value">Valeur</label>
+                    <input type="text" id="cmd-value" placeholder="ex: on, off, 38, true">
+                </div>
+                <button type="submit" class="btn-primary">Envoyer la commande</button>
+            </form>
+            
+            <div class="ack-section">
+                <label>Retour d'acquittement (ACK)</label>
+                <div id="ack-log" class="ack-log">En attente de commandes...</div>
+            </div>
+        </section>
+    </main>
+
+    <script type="module" src="./js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+# Administrateur : accès total
+user admin
+topic readwrite #
+
+# Front-end : lecture de tout l'état, écriture uniquement des commandes
+user front_user
+topic read rc/v1/#
+topic write rc/v1/cmd/#
+
+# Simulateur / Nodes : publication des capteurs, lecture des commandes
+user node_user
+topic write rc/v1/reading/+
+topic write rc/v1/door/+
+topic write rc/v1/heartbeat/+
+topic write rc/v1/ack/+
+topic write rc/v1/boot/+
+topic read rc/v1/cmd/+

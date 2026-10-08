@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  broker:
+    image: eclipse-mosquitto:latest
+    ports:
+      - "1883:1883" # TCP pour les nodes et le simulateur
+      - "9001:9001" # WebSockets pour le front-end
+    volumes:
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - ./mosquitto/acl:/mosquitto/config/acl
+      - ./mosquitto/passwd:/mosquitto/config/passwd
+      - mosquitto_data:/mosquitto/data
+    restart: always
+
+  simulator:
+    build: ./support
+    environment:
+      # Les identifiants "node_user" sont inclus directement dans l'URL
+      - MQTT_URL=mqtt://node_user:node_user@broker:1883
+    depends_on:
+      - broker
+
+  frontend:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html
+    depends_on:
+      - broker
+
+volumes:
+  mosquitto_data:

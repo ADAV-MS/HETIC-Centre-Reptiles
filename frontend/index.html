@@ -37,7 +37,7 @@
 
         <!-- Section Graphique historique -->
         <section class="card-box span-2">
-            <h2 id="detail-title">Historique 30 minutes (Sélectionner un enclos)</h2>
+            <h2 id="detail-title">Historique : (Sélectionner un enclos)</h2>
             <div class="chart-container">
                 <canvas id="chart-node"></canvas>
             </div>
@@ -49,7 +49,9 @@
             <form id="cmd-form" class="cmd-form">
                 <div class="form-group">
                     <label for="cmd-target">Node cible</label>
-                    <input type="text" id="cmd-target" readonly placeholder="Sélectionner dans la grille">
+                    <select id="cmd-target">
+                        <option value="">-- Choisir un capteur --</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label for="cmd-action">Action</label>
@@ -65,7 +67,10 @@
                 </div>
                 <div class="form-group">
                     <label for="cmd-value">Valeur</label>
-                    <input type="text" id="cmd-value" placeholder="ex: on, off, 38, true">
+                    <!-- Conteneur dynamique pour la valeur selon l'action -->
+                    <div id="value-container">
+                        <input type="text" id="cmd-value" placeholder="ex: on, off, 38, true">
+                    </div>
                 </div>
                 <button type="submit" class="btn-primary">Envoyer la commande</button>
             </form>
@@ -77,6 +82,7 @@
         </section>
     </main>
 
+    <!-- Importation du script principal en tant que module -->
     <script type="module" src="./js/app.js"></script>
 </body>
 </html>

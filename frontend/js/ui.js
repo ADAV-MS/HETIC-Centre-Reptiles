@@ -11,8 +11,8 @@ export function initUI(mqttClient) {
         data: {
             labels: [],
             datasets: [
-                { label: 'Point Chaud (°C)', data: [], borderColor: '#ef4444', borderWidth: 2, tension: 0.1, fill: false },
-                { label: 'Point Froid (°C)', data: [], borderColor: '#0284c7', borderWidth: 2, tension: 0.1, fill: false }
+                { label: 'Point Chaud (°C)', data: [], borderColor: '#ef4444', borderWidth: 2, tension: 0.1, fill: false, spanGaps: true },
+                { label: 'Point Froid (°C)', data: [], borderColor: '#0284c7', borderWidth: 2, tension: 0.1, fill: false, spanGaps: true }
             ]
         },
         options: { 
@@ -30,7 +30,8 @@ export function initUI(mqttClient) {
         e.preventDefault();
         const target = document.getElementById('cmd-target').value;
         const action = document.getElementById('cmd-action').value;
-        let rawVal = document.getElementById('cmd-value').value;
+        const valueInput = document.getElementById('cmd-value');
+        let rawVal = valueInput ? valueInput.value : '';
 
         if (!target) {
             alert('Veuillez sélectionner un node dans la grille.');
@@ -53,7 +54,51 @@ export function initUI(mqttClient) {
     });
 }
 
+function initDynamicValueField() {
+    const actionSelect = document.getElementById('cmd-action');
+    const valueContainer = document.getElementById('value-container');
+
+    if (!actionSelect || !valueContainer) return;
+
+    const updateField = () => {
+        const action = actionSelect.value;
+        
+        if (action === 'lamp' || action === 'light') {
+            valueContainer.innerHTML = `
+                <select id="cmd-value">
+                    <option value="on">on</option>
+                    <option value="off">off</option>
+                </select>
+            `;
+        } else if (action === 'safety_cut') {
+            valueContainer.innerHTML = `
+                <select id="cmd-value">
+                    <option value="true">true</option>
+                    <option value="false">false</option>
+                </select>
+            `;
+        } else if (action === 'setpoint') {
+            valueContainer.innerHTML = `
+                <input type="number" id="cmd-value" value="32" placeholder="ex: 32">
+            `;
+        } else if (action === 'interval') {
+            valueContainer.innerHTML = `
+                <input type="number" id="cmd-value" value="60" placeholder="ex: 60">
+            `;
+        } else {
+            valueContainer.innerHTML = `
+                <input type="text" id="cmd-value" placeholder="Valeur...">
+            `;
+        }
+    };
+
+    actionSelect.addEventListener('change', updateField);
+    updateField();
+}
+
 export function handleIncomingData(node, payload) {
+    let isNewNode = false;
+
     if (!nodesData[node]) {
         nodesData[node] = {
             id: node,
@@ -64,6 +109,7 @@ export function handleIncomingData(node, payload) {
             lastSeen: Date.now(),
             history: []
         };
+        isNewNode = true;
     }
 
     const d = nodesData[node];
@@ -73,10 +119,19 @@ export function handleIncomingData(node, payload) {
         if (payload.sensor === 'temp_hot' || payload.sensor === 'temp_ambient') d.tempHot = Number(payload.value);
         if (payload.sensor === 'temp_cold') d.tempCold = Number(payload.value);
 
-        // Historique 30 minutes
-        const limit = Date.now() - 30 * 60 * 1000;
-        d.history.push({ ts: payload.ts || Date.now(), tempHot: d.tempHot, tempCold: d.tempCold });
-        d.history = d.history.filter(h => h.ts >= limit);
+        const currentTs = payload.ts || Date.now();
+        const lastPoint = d.history.length > 0 ? d.history[d.history.length - 1] : null;
+
+        if (lastPoint && lastPoint.ts === currentTs) {
+            lastPoint.tempHot = d.tempHot;
+            lastPoint.tempCold = d.tempCold;
+        } else {
+            d.history.push({ ts: currentTs, tempHot: d.tempHot, tempCold: d.tempCold });
+        }
+
+        if (d.history.length > 60) {
+            d.history.shift();
+        }
 
     } else if (payload.type === 'door') {
         d.door = payload.state;
@@ -99,8 +154,23 @@ export function handleIncomingData(node, payload) {
         resolveAlert(node, 'sensor');
     }
 
+    if (isNewNode) updateCommandSelect();
     renderGrid();
     if (selectedNode === node) updateChart(node);
+}
+
+function updateCommandSelect() {
+    const select = document.getElementById('cmd-target');
+    if (!select) return;
+    
+    const currentVal = select.value; 
+    let html = '<option value="">-- Choisir un capteur --</option>';
+    for (const id of Object.keys(nodesData).sort()) {
+        html += `<option value="${id}">${id}</option>`;
+    }
+    
+    select.innerHTML = html;
+    if (currentVal) select.value = currentVal;
 }
 
 export function checkSilentNodes() {
@@ -173,7 +243,7 @@ function renderGrid() {
 
 window.selectNode = function(id) {
     selectedNode = id;
-    document.getElementById('detail-title').textContent = `Historique 30 minutes : ${id}`;
+    document.getElementById('detail-title').textContent = `Historique : ${id}`;
     document.getElementById('cmd-target').value = id;
     renderGrid();
     updateChart(id);
@@ -181,7 +251,7 @@ window.selectNode = function(id) {
 
 function updateChart(id) {
     const d = nodesData[id];
-    if (!d) return;
+    if (!d || !chart) return;
     chart.data.labels = d.history.map(h => new Date(h.ts).toLocaleTimeString());
     chart.data.datasets[0].data = d.history.map(h => h.tempHot);
     chart.data.datasets[1].data = d.history.map(h => h.tempCold);
